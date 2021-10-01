@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="minimum-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="Cache-control" content="public">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	
+	<title>Argos Tools</title>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600">
+	<link rel="stylesheet" href="css/global.css">
+
+	<link rel="apple-touch-icon" href="logo.png" />
+	<link rel="shortcut icon" type="image/png" href="logo.png" />
+</head>
+
+<body>
+	<header>
+		<div class="container">
+			<a href="#" class="logo">
+				Check Character Lookup
+			</a>
+		</div>
+	</header>
+
+	<div class="container">
+		<main>
+			<p class="headline">Enter a shelf location to find it's check character.</p>
+
+			<div class="location-box">
+				<div class="location-box-main">
+					<input type="text" maxlength="4" class="location-name" id="location-input" value="NULL">
+
+					<p class="location-text">&ldquo;<span id="location-text">NULL</span>&rdquo;</p>
+
+					<div id="check-char" class="check-char">
+						NULL
+					</div>
+				</div>
+			</div>
+		</main>
+	</div>
+
+	<footer>
+		<div>
+			<a href="./">Home</a>
+		</div>
+	</footer>
+</body>
+
+<script src="stay-standalone.js"></script>
+<script>
+	const charStrings = {
+		'-': 'BEFORE',
+		'A': 'ALPHA',
+		'B': 'BRAVO',
+		'C': 'CHARLIE',
+		'D': 'DELTA',
+		'E': 'ECHO',
+		'F': 'FOXTROT',
+		'G': 'GOLF',
+		'H': 'HOTEL',
+		'I': 'INDIA',
+		'J': 'JULIET',
+		'K': 'KILO',
+		'L': 'LIMA',
+		'M': 'MIKE',
+		'N': 'NOVEMBER',
+		'O': 'OSCAR',
+		'P': 'PAPA',
+		'Q': 'QUEBEC',
+		'R': 'ROMEO',
+		'S': 'SIERRA',
+		'T': 'TANGO',
+		'U': 'UNIFORM',
+		'V': 'VICTOR',
+		'W': 'WHISKEY',
+		'X': 'X-RAY',
+		'Y': 'YANKEE',
+		'Z': 'ZULU',
+		'+': 'AFTER',
+		'0': 'ZERO',
+		'1': 'ONE',
+		'2': 'TWO',
+		'3': 'THREE',
+		'4': 'FOUR',
+		'5': 'FIVE',
+		'6': 'SIX',
+		'7': 'SEVEN',
+		'8': 'EIGHT',
+		'9': 'NINE'
+	};
+
+	let locationInputDom = document.getElementById('location-input');
+	let locationTextDom = document.getElementById('location-text');
+	let checkCharacterDom = document.getElementById('check-char');
+
+	function getPhonetic(letter) {
+		letter = letter.toUpperCase();
+		if (typeof charStrings[letter] === undefined) return "NULL";
+		return charStrings[letter];
+	}
+
+	function getLocationName(location) {
+		location = location.toUpperCase();
+
+		if (location === 'RETS') return 'RETURNS';
+		if (location === 'DPA') return 'DPA';
+		if (location === 'SOB') return 'SOB';
+
+		let returnVal = '';
+		let firstChar = location.substr(0, 1);
+
+		//Get end number part of location
+		let numbers = location.match(/[0-9]{1,2}/);
+		let numberStrings = '';
+		if (numbers !== null) {
+			for (let i = 0; i < numbers[0].length; i++) {
+				numberStrings += getPhonetic(numbers[0].charAt(i)) + ' ';
+			}
+		}
+
+		//Get letter part of location
+		let letters = location.match(/(?!^)([A-Z]{1,2})/m);
+		let letterStrings = '';
+		if (letters !== null) {
+			for (let i = 0; i < letters[0].length; i++) {
+				letterStrings += getPhonetic(letters[0].charAt(i)) + ' ';
+			}
+		}
+
+		//check for after,before
+		if (location.substr(-1) === '+') returnVal += 'AFTER ';
+		else if (location.substr(-1) === '-') returnVal += 'BEFORE ';
+
+
+		//check for jewellery, security, linbins, bulk
+		if (firstChar === 'J') returnVal += 'JEWELLERY ' + numberStrings + letterStrings;
+		else if (firstChar === 'S') returnVal += 'SECURITY ' + numberStrings + letterStrings;
+		else if (firstChar === 'L') returnVal += numberStrings + 'LINBIN ' + letterStrings;
+		else if (firstChar === 'Z') returnVal += numberStrings + 'BULK ' + letterStrings;
+		else returnVal += numberStrings + letterStrings;
+
+		//check for misc locations
+		if (location.substr(0, 2) == 'CA') {
+			return 'CASH OFFICE ' + letterStrings;
+		}
+
+		return returnVal.trim();
+	}
+
+	function getCheckCharacter(location) {
+		location = location.toUpperCase();
+		let i = 0;
+
+		if (location === 'RETS') return 'OSCAR';
+		else if (location === 'SOB') return 'SIERRA';
+		else if (location === 'DPA') return 'VICTOR';
+
+		location = location.replace(/[^a-zA-Z0-9_+-]/g, '');
+
+		if (location.length > 3) {
+			for (let k = 2; k < 6; k++) {
+				//i += (location.charCodeAt(k % 4)) * (k % 3 * 2 + 3);
+				let characterIndex = k % 4;
+				let characterModifier = k % 3 * 2 + 3;
+				let characterTotal = location.charCodeAt(characterIndex) * characterModifier;
+				i += characterTotal;
+			}
+
+			return getPhonetic(String.fromCharCode(i % 26 + 65));
+		} else {
+			return 'NULL';
+		}
+	}
+
+	locationInputDom.addEventListener('input', function (e) {
+		let location = locationInputDom.value.toUpperCase();
+
+		if (location.length > 3 || location === "DPA" || location === "SOB") {
+			locationTextDom.innerText = getLocationName(location);
+			checkCharacterDom.innerText = getCheckCharacter(location);
+		} else {
+			locationTextDom.innerText = 'NULL';
+			checkCharacterDom.innerText = 'NULL';
+		}
+
+		e.preventDefault();
+	});
+
+	document.getElementById('location-input').addEventListener('focus', function (e) {
+		this.value === 'NULL' && (this.value = '');
+	});
+
+	document.getElementById('location-input').addEventListener('blur', function (e) {
+		this.value === "" && (this.value = 'NULL');
+	});
+</script>
+
+</html>

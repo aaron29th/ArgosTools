@@ -1,0 +1,229 @@
+@charset "utf-8";
+
+body {
+	font: 400 18px/1.6 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+	color: #090707;
+	background-color: #fff;
+}
+
+.container {
+	margin: 0 auto;
+	max-width: 960px;
+	width: 100%;
+}
+
+a { color: #e53a40; text-decoration: none; }
+.container a:hover { text-decoration: underline; }
+
+header {
+	background-color: #e53a40;
+}
+
+	header .logo {
+		display: block;
+		color: #fff;
+		text-decoration: none;
+		width: 250px;
+		text-align: center;
+		background-color: #c72228;
+		padding: 15px;
+		font-size: 20px;
+		font-weight: 300;
+	}
+
+main {
+	padding: 25px;
+	text-align: center;
+}
+
+.location-box {
+	background-color: #efdc05;
+	max-width: 420px;
+	margin: 25px auto 0;
+	padding: 7px;
+	border-radius: 5px;
+}
+
+	.location-box-main {
+		border: 1px solid #000;
+	}
+
+		.location-name {
+			display: block;
+			width: 100%;
+			height: 70px;
+			font-size: 58px;
+			border: 0;
+			font-family: 'Source Sans Pro';
+			background-color: transparent;
+			text-align: center;
+			font-weight: 600;
+			text-transform: uppercase;
+		}
+
+		.location-text {
+			margin: 9px 0 5px;
+			text-transform: uppercase;
+		}
+
+		.check-char {
+			background-color: #000;
+			color: #efdc05;
+			font-size: 39px;
+			text-transform: uppercase;
+			font-weight: 600;
+		}
+
+footer {
+	font-size: 20px;
+	color: black;
+	font-weight: 300;
+	text-align: center;
+}
+
+footer .adspace {
+	margin: 15px auto 0;
+}
+
+footer a:visited {
+	color: #e53a40;
+}
+
+@media only screen and (max-width: 650px) {
+	.container {
+		max-width: 99%;
+	}
+	
+	header .logo {
+		width: 100%;
+		font-size: 24px;
+		font-weight: 400;
+	}
+	
+	header .container {
+		max-width: 100%;
+	}
+}
+
+*, *:before, *:after {
+	box-sizing: border-box;
+	outline: none;
+	padding: 0;
+	margin: 0;
+}
+
+.possibleCatNum {
+	display: block;
+
+	width: 30%;
+	min-width: 200px;
+	
+	margin: auto;
+}
+
+#possible-catnums a:hover {
+	text-decoration: none;
+}
+
+.possibleCatNum > div:first-child {
+	padding: 5px;
+	margin-top: 20px;
+	border-radius: 5px;
+	
+	background-color: #efdc05;
+
+	color: black;
+	font-size: 30px;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.possibleCatNum > div:first-child:hover {
+	background-color: #dac802;
+}
+
+#clearInput {
+	color: black;
+	font-size: 20px;
+	text-transform: uppercase;
+	font-weight: 600;
+}
+
+.location-box a:hover {
+	text-decoration: none;
+}
+
+.productTitle {
+	font-size: 10px;
+}
+
+.filter div {
+	margin: 10px;
+}
+
+.filter input {
+	padding: 5px;
+	width: 70px;
+	border-radius: 5px;
+	text-transform: uppercase;
+	text-align: center;
+}
+
+#possibleLocations span {
+	margin: 0 10px;
+	display: inline-grid;
+}
+
+::-webkit-input-placeholder {
+	text-align: center;
+ }
+ 
+ :-moz-placeholder { /* Firefox 18- */
+	text-align: center;  
+ }
+ 
+ ::-moz-placeholder {  /* Firefox 19+ */
+	text-align: center;  
+ }
+ 
+ :-ms-input-placeholder {  
+	text-align: center; 
+ }
+
+ .extraInfo {
+	 margin: 10px;
+ }
+
+ .extraInfo label {
+	 vertical-align: middle;
+ }
+
+ .extraInfo input {
+	 width: 20px;
+	 height: 20px;
+	 vertical-align: middle;
+	 margin-right: 5px;
+ }
+
+ul {
+    text-align: center;
+    list-style-position: inside;
+}
+
+.description {
+	font-size: 14px;
+}
+
+#shareURL {
+	border-radius: 5px;
+	padding: 5px;
+	width: 250px;
+}
+
+img {
+	max-width: 300px;
+}
+
+#ios-add-to-home {
+	display: none;
+}

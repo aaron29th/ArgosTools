@@ -1,0 +1,15 @@
+{
+  "name": "Argos Tools",
+  "short_name": "Argos Tools",
+  "description": "A set of tools for internal Argos use",
+  "start_url": "/argos/",
+  "background_color": "#d42114",
+  "theme_color": "#d42114",
+  "icons": [{
+    "src": "logo.png",
+    "sizes": "300x300",
+    "type": "image/png"
+  }],
+  "display": "fullscreen",
+  "scope": "/argos/"
+}

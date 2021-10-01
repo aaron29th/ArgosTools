@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport"
+		content="minimum-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="Cache-control" content="public">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+
+	<title>Argos Tools</title>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600">
+	<link rel="stylesheet" href="css/global.css">
+
+	<link rel="apple-touch-icon" href="logo.png" />
+	<link rel="shortcut icon" type="image/png" href="logo.png" />
+	<link rel="manifest" href="manifest.json">
+</head>
+
+<body>
+	<header>
+		<div class="container">
+			<a href="#" class="logo">
+				Argos Tools
+			</a>
+		</div>
+	</header>
+
+	<div class="container">
+		<main>
+			<p class="headline"></p>
+
+			<div>
+				<a href="cat-lookup">Cat Num Lookup</a>
+				<div class="description">
+					Search for products catalogue numbers by:
+					<ul>
+						<li>Their first 6 digits (eg 703/661)</li>
+						<li>Their last 4 digits (eg ***/6613)</li>
+						<li>Any of their digits (eg 70*/66*3)</li>
+					</ul>
+				</div>
+			</div>
+			<div>
+				<a href="check-character-lookup">Check character lookup</a>
+				<div class="description">
+					Lookup any locations check character
+				</div>
+			</div>
+			<div>
+				<a href="check-character-collisions">Check character collisions</a>
+				<div class="description">
+					Find locations that share the same <br />
+					check charcter and three letters / digits as a given location
+				</div>
+			</div>
+			<br />
+
+			<div>
+				<a onclick="copyToClipboard()">Copy link</a>
+				<div>
+					<input type="text" id="shareURL" value="https://aaronrosser.xyz/argos/" />
+				</div>
+			</div>
+			<br/>
+
+			<div id="ios-add-to-home">
+				<div class="description">On iOS why not add Argos Tools to the homescreen?</div>
+				<a href="ios-add-to-homescreen">Learn how</a>
+			</div>
+		</main>
+	</div>
+
+	<footer>
+
+	</footer>
+
+	<script src="stay-standalone.js"></script>
+	<script>
+		function copyToClipboard() {
+			/* Get the text field */
+			var copyText = document.getElementById("shareURL");
+
+			/* Select the text field */
+			copyText.select();
+			copyText.setSelectionRange(0, 99999); /*For mobile devices*/
+
+			/* Copy the text inside the text field */
+			document.execCommand("copy");
+
+			/* Alert the copied text */
+			alert("Copied the text: " + copyText.value);
+		}
+
+		const isInStandaloneMode = () => (window.matchMedia('(display-mode: standalone)').matches) || (window.navigator.standalone);
+
+		if (!isInStandaloneMode()) {
+			if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+				document.getElementById("ios-add-to-home").style.display = "block";
+			}
+		}
+
+		if ('serviceWorker' in navigator) {
+			console.log("Will the service worker register?");
+			navigator.serviceWorker.register('service-worker.js')
+				.then(function (reg) {
+					console.log("Yes, it did.");
+				}).catch(function (err) {
+					console.log("No it didn't. This happened: ", err)
+				});
+		}
+	</script>
+</body>
+
+</html>

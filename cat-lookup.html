@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="minimum-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="Cache-control" content="public">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	
+	<title>Argos Tools</title>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600">
+	<link rel="stylesheet" href="css/global.css">
+
+	<link rel="apple-touch-icon" href="logo.png" />
+	<link rel="shortcut icon" type="image/png" href="logo.png" />
+</head>
+
+<body>
+	<header>
+		<div class="container">
+			<a href="#" class="logo">
+				Cat Num Lookup
+			</a>
+		</div>
+	</header>
+
+	<div class="container">
+		<main>
+			<p class="headline">Enter the product's catalogue number.</p>
+
+			<div class="location-box">
+				<div class="location-box-main">
+					<input type="tel" maxlength="8" class="location-name" 
+					id="catnum-input" value="000/0000">
+				</div>
+				<a href="#"><span id="clearInput">Clear</span></a>
+			</div>
+
+			<div class="extraInfo">
+				<label>
+					<input id="extra-info" type="checkbox">Extra info
+				</label>
+			</div>
+
+			<div>
+				<span id="resultsNumber">Results: 0</span>
+			</div>
+
+			<div id="possible-catnums">
+
+			</div>
+		</main>
+	</div>
+
+	<footer>
+		<div>
+			<span id="lastUpdated">Last updated: </span>
+		</div>
+		<div>
+			<a href="./">Home</a>
+		</div>
+	</footer>
+</body>
+
+<script src="stay-standalone.js"></script>
+<script src="products.js"></script>
+<script src="auto_generated_products.js"></script>
+<script src="4digitCatNums.js"></script>
+<script src="auto_generated_4digitCatNums.js"></script>
+<script>
+function setCaretPosition(elem, caretPos) {
+    if(elem != null) {
+        if(elem.createTextRange) {
+            var range = elem.createTextRange();
+            range.move('character', caretPos);
+            range.select();
+        }
+        else {
+            if(elem.selectionStart) {
+                elem.focus();
+                elem.setSelectionRange(caretPos, caretPos);
+            }
+            else
+                elem.focus();
+        }
+    }
+}
+</script>
+<script>
+	let catNumInputDom = document.getElementById('catnum-input');
+	let possibleCatNumsDom = document.getElementById('possible-catnums');
+	let extraInfoCheckBoxDom = document.getElementById('extra-info');
+	let resultsNumberDom = document.getElementById('resultsNumber');
+	let lastUpdatedDom = document.getElementById('lastUpdated');
+
+	let binarySearch = function (arr, x) { 
+		let start = 0;
+		let end = arr.length - 1; 
+
+		// Iterate while start not meets end 
+		while (start <= end){ 
+			// Find the mid index 
+			let mid = Math.floor((start + end) / 2); 
+
+			// If element is present at mid, return True 
+			if (arr[mid] === x) return mid; 
+
+			// Else look in left or right half accordingly 
+			else if (arr[mid] < x)  
+				start = mid + 1; 
+			else
+				end = mid - 1; 
+		}
+		return start; 
+	} 
+
+	let getProductsUpdatedDate = function () {
+		//If new cat nums load
+		if (typeof(updatedTimestamp) !== 'undefined' && Number.isInteger(updatedTimestamp)) {
+			lastUpdatedDom.innerText = 'Last updated: ' + new Date(updatedTimestamp * 1000).toDateString();
+			return;
+		}
+		lastUpdatedDom.innerText = 'Last updated: Wed Oct 16 2019';
+	}
+
+	function getPossibleCatNums(catNumStr) {
+		if (catNumStr.length <= 3) return [];	//No possible for 3 digit
+		
+		let minCatNum = parseInt(catNumStr);
+		let maxCatNum = minCatNum;
+
+		if (minCatNum < 10000) {
+			minCatNum *= 1000;	//Times 4 digit numbers by 100
+			maxCatNum = minCatNum + 999;
+		}
+
+		if (minCatNum < 100000) {
+			minCatNum *= 100;	//Times 5 digit numbers by 100
+			maxCatNum = minCatNum + 99;
+		}
+		
+		if (minCatNum < 1000000) {
+			minCatNum *= 10;	//Times 6 digit numbers by 10
+			maxCatNum = minCatNum + 9;
+		}
+
+		let minPos = binarySearch(products, minCatNum);
+		let results = [];
+		for (let i = 0; i < (products.length - minPos); i++) {
+			if (products[minPos + i] >= minCatNum && products[minPos + i] <= maxCatNum) {
+				results.push(products[minPos + i]);
+			}
+			if (products[minPos + i] > maxCatNum) return results;
+		}
+		return results;
+	}
+
+	function formatCatNum(catNum) {
+		if (catNum.length <= 3) return catNum;
+		return catNum.substring(0, 3) + '/' + catNum.substring(3)
+	}
+
+	function wildcardCatNumLookUp(catNumStr) {
+		if (catNumStr.match(/(\*{3})([0-9]{0,3})$/)) {
+			return [];
+		}
+		if (catNumStr.match(/(.{3})([0-9]{4})/)) {
+			let matches = catNumStr.match(/(.{3})([0-9]{4})/);
+			//let fourDigits = parseInt(matches[2]);
+			let fourDigits = matches[2];
+			return fourDigitCatNums[fourDigits] || [];
+		}
+		//Must be 6 / 7 characters
+		if (catNumStr.length < 6) return [];
+
+		while(catNumStr.length < 7) {
+			catNumStr += '*';
+		}
+		let pattern = catNumStr.replace(/\*/g, '.');
+		return products.filter((catNum) => catNum.toString().match(new RegExp(pattern)));
+	}
+
+	function handlePossibleCatNums(possibleCatNums) {
+		resultsNumberDom.innerText = `Results: ${possibleCatNums.length}`;
+		if (possibleCatNums.length === 0) return;
+
+		possibleCatNums = possibleCatNums.slice(0, 10);
+
+		possibleCatNums.forEach(catNum => {
+			let catNumP = document.createElement("p");
+			catNumP.innerText = formatCatNum(catNum.toString());
+
+			let productTitleP = document.createElement("p");
+			productTitleP.className = 'productTitle';
+			productTitleP.id = catNum.toString();
+
+			let parentDiv = document.createElement("div");
+			parentDiv.appendChild(catNumP);
+			parentDiv.appendChild(productTitleP);
+			
+			let newLink = document.createElement("a");
+			newLink.href = `https://www.argos.co.uk/product/${catNum}`;
+			newLink.className = "possibleCatNum";
+			newLink.target = "_blank";
+
+			newLink.appendChild(parentDiv);
+
+			possibleCatNumsDom.appendChild(newLink);
+		});
+
+		let xhr = new XMLHttpRequest();
+		let postUrl = 'proxy.php';
+		xhr.open("POST", postUrl, true);
+		xhr.setRequestHeader('Content-Type', 'application/json');
+		xhr.onreadystatechange = function () {
+			if (this.readyState != 4) return;
+			if (this.status !== 200) return;
+			let productsArr = JSON.parse(this.responseText);
+
+			productsArr.forEach(obj => {
+				let element = document.getElementById(obj.catNum);
+				
+				if (element === null) return;
+
+				element.innerText = obj.title;
+				if (extraInfoCheckBoxDom.checked) {
+					let details = obj.title;
+					if (obj.price !== '') details += '<br/>' + obj.price;
+					if (obj.oldPrice !== '') details += ' was ' + obj.oldPrice;
+					obj.cares.forEach(care => {
+						details += '<br/>' + care.name + '<br/>' + care.price;
+					});
+					element.innerHTML = details;
+				}
+			});
+		};
+
+		xhr.send(JSON.stringify(possibleCatNums));
+	}
+
+	catNumInputDom.addEventListener('keydown', function (e) {
+		if (e.key.length == 1 && !e.key.match(/[0-9\*]/)) {
+			e.preventDefault();
+			return;
+		};
+	});
+
+	catNumInputDom.addEventListener('input', function (e) {
+		let catNumStr = catNumInputDom.value.replace("/", "");
+
+		let currentPos = catNumInputDom.selectionStart;
+
+		if (currentPos == 4) currentPos = 5;
+
+		catNumInputDom.value = formatCatNum(catNumStr);
+
+		setCaretPosition(catNumInputDom, currentPos);
+		
+		possibleCatNumsDom.innerHTML = '';
+		resultsNumberDom.innerText = 'Results: 0';
+		if (catNumStr.match(/\*/)) {
+			var possibleCatNums = wildcardCatNumLookUp(catNumStr);
+		} else {
+			var possibleCatNums = getPossibleCatNums(catNumStr);
+		}
+
+		handlePossibleCatNums(possibleCatNums);
+	});
+
+	catNumInputDom.addEventListener('focus', function (e) {
+		this.value === '000/0000' && (this.value = '');
+	});
+
+	catNumInputDom.addEventListener('blur', function (e) {
+		this.value === "" && (this.value = '000/0000');
+	});
+
+	document.getElementById("clearInput").addEventListener('click', function (e) {
+		catNumInputDom.value = "000/0000";
+		possibleCatNumsDom.innerHTML = '';
+		resultsNumberDom.innerText = 'Results: 0';
+	});
+
+	getProductsUpdatedDate();
+</script>
+
+</html>

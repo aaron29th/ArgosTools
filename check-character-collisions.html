@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="minimum-scale=1.0, width=device-width, maximum-scale=1.0, user-scalable=no, minimal-ui, viewport-fit=cover" />
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+	<meta http-equiv="Cache-control" content="public">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	
+	<title>Argos Tools</title>
+
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600">
+	<link rel="stylesheet" href="css/global.css">
+
+	<link rel="apple-touch-icon" href="logo.png" />
+	<link rel="shortcut icon" type="image/png" href="logo.png" />
+</head>
+
+<body>
+	<header>
+		<div class="container">
+			<a href="#" class="logo">
+				Check Character Collisions
+			</a>
+		</div>
+	</header>
+
+	<div class="container">
+		<main>
+			<p class="headline">Enter a shelf location to find other locations with the same check character 
+				<br/>and three matching characters.</p>
+
+			<div class="location-box">
+				<div class="location-box-main">
+					<input type="text" maxlength="4" class="location-name" id="location-input" value="NULL">
+
+					<p class="location-text">&ldquo;<span id="location-text">NULL</span>&rdquo;</p>
+
+					<div id="check-char" class="check-char">
+						NULL
+					</div>
+				</div>
+			</div>
+
+			<h3>Filter</h3>
+			<div class="filter">
+				<div>
+					<label>Start location</label>
+					<input type="text" id="startLocation" maxlength="4" placeholder="00A-">
+				</div>
+				<div>
+					<label>End location</label>
+					<input type="text" id="endLocation" maxlength="4" placeholder="99Z+">
+				</div>
+				
+				<div>
+					<label>Match characters</label>
+					<input type="text" id="matchCharacters">
+				</div>
+			</div>
+
+			<h3>Locations</h3>
+			<div id="possibleLocations">
+
+			</div>
+		</main>
+	</div>
+
+	<footer>
+		<div>
+			<a href="./">Home</a>
+		</div>
+	</footer>
+</body>
+
+<script src="stay-standalone.js"></script>
+<script>
+	const charStrings = {
+		'-': 'BEFORE',
+		'A': 'ALPHA',
+		'B': 'BRAVO',
+		'C': 'CHARLIE',
+		'D': 'DELTA',
+		'E': 'ECHO',
+		'F': 'FOXTROT',
+		'G': 'GOLF',
+		'H': 'HOTEL',
+		'I': 'INDIA',
+		'J': 'JULIET',
+		'K': 'KILO',
+		'L': 'LIMA',
+		'M': 'MIKE',
+		'N': 'NOVEMBER',
+		'O': 'OSCAR',
+		'P': 'PAPA',
+		'Q': 'QUEBEC',
+		'R': 'ROMEO',
+		'S': 'SIERRA',
+		'T': 'TANGO',
+		'U': 'UNIFORM',
+		'V': 'VICTOR',
+		'W': 'WHISKEY',
+		'X': 'X-RAY',
+		'Y': 'YANKEE',
+		'Z': 'ZULU',
+		'+': 'AFTER',
+		'0': 'ZERO',
+		'1': 'ONE',
+		'2': 'TWO',
+		'3': 'THREE',
+		'4': 'FOUR',
+		'5': 'FIVE',
+		'6': 'SIX',
+		'7': 'SEVEN',
+		'8': 'EIGHT',
+		'9': 'NINE'
+	};
+
+	let locationInputDom = document.getElementById('location-input');
+	let locationTextDom = document.getElementById('location-text');
+	let checkCharacterDom = document.getElementById('check-char');
+	
+	let startLocationDom = document.getElementById('startLocation');
+	let endLocationDom = document.getElementById('endLocation');
+	let matchCharactersDom = document.getElementById('matchCharacters');
+	let possibleLocationsDom = document.getElementById('possibleLocations');
+
+	function getPhonetic(letter) {
+		letter = letter.toUpperCase();
+		if (typeof charStrings[letter] === undefined) return "NULL";
+		return charStrings[letter];
+	}
+
+	function getLocationName(location) {
+		location = location.toUpperCase();
+
+		if (location === 'RETS') return 'RETURNS';
+		if (location === 'DPA') return 'DPA';
+		if (location === 'SOB') return 'SOB';
+
+		let returnVal = '';
+		let firstChar = location.substr(0, 1);
+
+		//Get end number part of location
+		let numbers = location.match(/[0-9]{1,2}/);
+		let numberStrings = '';
+		if (numbers !== null) {
+			for (let i = 0; i < numbers[0].length; i++) {
+				numberStrings += getPhonetic(numbers[0].charAt(i)) + ' ';
+			}
+		}
+
+		//Get letter part of location
+		let letters = location.match(/(?!^)([A-Z]{1,2})/m);
+		let letterStrings = '';
+		if (letters !== null) {
+			for (let i = 0; i < letters[0].length; i++) {
+				letterStrings += getPhonetic(letters[0].charAt(i)) + ' ';
+			}
+		}
+
+		//check for after,before
+		if (location.substr(-1) === '+') returnVal += 'AFTER ';
+		else if (location.substr(-1) === '-') returnVal += 'BEFORE ';
+
+
+		//check for jewellery, security, linbins, bulk
+		if (firstChar === 'J') returnVal += 'JEWELLERY ' + numberStrings + letterStrings;
+		else if (firstChar === 'S') returnVal += 'SECURITY ' + numberStrings + letterStrings;
+		else if (firstChar === 'L') returnVal += numberStrings + 'LINBIN ' + letterStrings;
+		else if (firstChar === 'Z') returnVal += numberStrings + 'BULK ' + letterStrings;
+		else returnVal += numberStrings + letterStrings;
+
+		//check for misc locations
+		if (location.substr(0, 2) == 'CA') {
+			return 'CASH OFFICE ' + letterStrings;
+		}
+
+		return returnVal.trim();
+	}
+
+	function getCheckCharacter(location) {
+		location = location.toUpperCase();
+		let i = 0;
+
+		if (location === 'RETS') return 'OSCAR';
+		else if (location === 'SOB') return 'SIERRA';
+		else if (location === 'DPA') return 'VICTOR';
+
+		location = location.replace(/[^a-zA-Z0-9_+-]/g, '');
+
+		if (location.length > 3) {
+			for (let k = 2; k < 6; k++) {
+				//i += (location.charCodeAt(k % 4)) * (k % 3 * 2 + 3);
+				let characterIndex = k % 4;
+				let characterModifier = k % 3 * 2 + 3;
+				let characterTotal = location.charCodeAt(characterIndex) * characterModifier;
+				i += characterTotal;
+			}
+
+			return getPhonetic(String.fromCharCode(i % 26 + 65));
+		} else {
+			return 'NULL';
+		}
+	}
+
+	function getCheckCollisions(checkChar) {
+		let locations = [];
+		let aplhabet = Object.keys(charStrings);
+
+		//00A- / 09Z+
+		for (let i = 0; i < 10; i++) {
+			for (let j = 10; j < 38; j++) {
+				for (let k = 10; k < 38; k++) {
+					let loc = `0${i}${aplhabet[j]}${aplhabet[k]}`;
+					if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+				}
+			}
+		}
+
+		//10A- / 63Z+
+		for (let i = 10; i < 64; i++) {
+			for (let j = 10; j < 38; j++) {
+				for (let k = 10; k < 38; k++) {
+					let loc = `${i}${aplhabet[j]}${aplhabet[k]}`;
+					if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+				}
+			}
+		}
+
+		//77
+		for (let j = 10; j < 38; j++) {
+			for (let k = 10; k < 38; k++) {
+				let loc = `77${aplhabet[j]}${aplhabet[k]}`;
+				if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+			}
+		}
+
+		//99
+		for (let j = 10; j < 38; j++) {
+			for (let k = 10; k < 38; k++) {
+				let loc = `99${aplhabet[j]}${aplhabet[k]}`;
+				if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+			}
+		}
+
+		//Security S0A- / S9Z+
+		for (let i = 0; i < 2; i++) {
+			for (let j = 10; j < 38; j++) {
+				for (let k = 10; k < 38; k++) {
+					let loc = `S${i}${aplhabet[j]}${aplhabet[k]}`;
+					if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+				}
+			}
+		}
+
+		//Jewelery J0A- / J9Z+
+		for (let i = 0; i < 9; i++) {
+			for (let j = 10; j < 38; j++) {
+				for (let k = 10; k < 38; k++) {
+					let loc = `J${i}${aplhabet[j]}${aplhabet[k]}`;
+					if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+				}
+			}
+		}
+
+		//Bulk Z00- / Z09+
+		for (let i = 0; i < 10; i++) {
+			for (let j = 10; j < 38; j++) {
+				let loc = `Z0${i}${aplhabet[j]}`;
+				if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+			}
+		}
+
+		//Bulk Z10- / Z99+
+		for (let i = 10; i < 99; i++) {
+			for (let j = 10; j < 38; j++) {
+				let loc = `Z${i}${aplhabet[j]}`;
+				if (getCheckCharacter(loc) == checkChar) locations.push(loc);
+			}
+		}
+
+		if (getCheckCharacter('SOB') == checkChar) locations.push('SOB');
+		if (getCheckCharacter('DPA') == checkChar) locations.push('DPA');
+		return locations;
+	}
+
+	function getFilteredCheckCollisions(location, matchCharacters) {
+		let checkChar = getCheckCharacter(location);
+		let unfilteredLocations = getCheckCollisions(checkChar);
+		let regexChars = matchCharacters.replace('-', '\-');
+		let regexPattern = `(([${regexChars}])([${regexChars}])([${regexChars}]))|(([${regexChars}]).([${regexChars}])([${regexChars}]))|(([${regexChars}])([${regexChars}]).([${regexChars}]))`;
+
+		let rangeStart = startLocationDom.value.replace('+', '~') || '00A-';
+		let rangeEnd = endLocationDom.value.replace('+', '~') || '99Z~';
+
+		let filteredLocations = [];
+		unfilteredLocations.forEach(loc => {
+			if (loc === location) return;
+			//Stop 01+A...
+			if (loc.charAt(2) === '+' || loc.charAt(2) === '-') return;
+
+			let matches = loc.match(regexPattern);
+			if (!matches) return;
+
+			let matchA = matches[2] || matches[6] || matches[10];
+			let matchB = matches[3] || matches[7] || matches[11];
+			let matchC = matches[4] || matches[8] || matches[12];
+
+			//Stops 00AA matching with 20AZ
+			if (matchA === matchB || matchB === matchC || matchA === matchC) {
+				if (matchCharacters.match(`[${matchA}]`).length === 1 &&
+				matchCharacters.match(`[${matchB}]`).length === 1 &&
+				matchCharacters.match(`[${matchC}]`).length === 1) {
+					return;
+				}
+			}
+
+			//Limit to range and S, J and Z
+			if ((rangeStart > loc || loc > rangeEnd) && !isNaN(loc.substring(0, 1))) return;
+			
+			filteredLocations.push(loc);
+		});
+
+		return filteredLocations;
+	}
+
+	function updateCollisions() {
+		let location = locationInputDom.value.toUpperCase();
+		possibleLocationsDom.innerHTML = '';
+
+		if (location !== 'NULL' && (location.length > 3 || location === "DPA" || location === "SOB")) {
+			locationTextDom.innerText = getLocationName(location);
+			checkCharacterDom.innerText = getCheckCharacter(location);
+
+			matchCharactersDom.placeholder = location;
+			let collisions = getFilteredCheckCollisions(location, matchCharactersDom.value.toUpperCase() || location);
+			collisions.forEach(loc => {
+				let locDom = document.createElement("span");
+				locDom.innerText = loc;
+
+				possibleLocationsDom.appendChild(locDom);
+			});
+		} else {
+			locationTextDom.innerText = 'NULL';
+			checkCharacterDom.innerText = 'NULL';
+			matchCharactersDom.placeholder = '';
+		}
+	}
+
+	locationInputDom.addEventListener('input', function (e) {
+		updateCollisions();
+
+		e.preventDefault();
+	});
+
+	startLocationDom.addEventListener('input', function (e) {
+		updateCollisions();
+	});
+
+	startLocationDom.addEventListener('keydown', function (e) {
+		if (e.key.length == 1 && !e.key.match(/[a-zA-Z0-9+-]/)) {
+			e.preventDefault();
+			return;
+		};
+	});
+
+	endLocationDom.addEventListener('input', function (e) {
+		updateCollisions();
+	});
+
+	endLocationDom.addEventListener('keydown', function (e) {
+		if (e.key.length == 1 && !e.key.match(/[a-zA-Z0-9+-]/)) {
+			e.preventDefault();
+			return;
+		};
+	});
+
+	matchCharactersDom.addEventListener('input', function (e) {
+		updateCollisions();
+	});
+
+	matchCharactersDom.addEventListener('keydown', function (e) {
+		if (e.key.length == 1 && !e.key.match(/[a-zA-Z0-9+-]/)) {
+			e.preventDefault();
+			return;
+		};
+	});
+
+	locationInputDom.addEventListener('focus', function (e) {
+		this.value === 'NULL' && (this.value = '');
+	});
+
+	locationInputDom.addEventListener('blur', function (e) {
+		this.value === "" && (this.value = 'NULL');
+	});
+</script>
+
+</html>
