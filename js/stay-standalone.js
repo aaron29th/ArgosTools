@@ -19,5 +19,5 @@ if(("standalone" in window.navigator) && window.navigator.standalone){
 			document.location.href = noddy.href;
 		}
 	
-	},false);
+	}, false);
 }
