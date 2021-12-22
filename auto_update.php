@@ -1,8 +1,25 @@
 <?php
 include('config.php');
 
-$xml = simplexml_load_string(file_get_contents('https://www.argos.co.uk/product.xml'));
+function get_products() {
+    $context = stream_context_create(
+        array(
+            'http' => array(
+                'header' => 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9\r\n' .
+                            'Accept-Encoding: identity\r\n' .
+                            'Accept-Language: en-GB,en-US;q=0.9,en;q=0.8\r\n' .
+                            'Cache-Control: max-age=0\r\n' .
+                            'User-Agent: Argos Tools - https://aaronrosser.xyz/argos - aaron@aaronrosser.xyz\r\n'
+            )
+        )
+    );
+    $res = file_get_contents('https://www.argos.co.uk/product.xml', false, $context);
+    $xml = simplexml_load_string($res);
 
+    return $xml;
+}
+
+// wtf why
 $json = json_encode($xml);
 $array = json_decode($json,TRUE)['url'];
 
